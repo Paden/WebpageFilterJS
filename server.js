@@ -13,24 +13,21 @@
  *              /_/                                                    
  */
 
-var pub     =  __dirname + '/public'
-,   express =  require('express')
-,   app     =  express.createServer()
-,   port    =  8080
-,   jsdom   =  require('jsdom');
+var pub        =  __dirname + '/public'
+  , express    =  require('express')
+  , app        =  express.createServer()
+  , port       =  8080
+  , jsdom      =  require('jsdom')
+  , fs         =  require('fs')
+  , http       =  require('http')
+  , gm         =  require('gm')
+  , dlPath     =  __dirname + '/uploads'
+  , filterPath =  pub + '/filter' 
 
 app.configure(function()
 {
-	 app.use(express.static(__dirname + '/public'));
+	 app.use(express.static(pub));
 });
-
-
-jsdom.defaultDocumentFeatures = {
-  FetchExternalResources   : [],
-  ProcessExternalResources : true,
-  MutationEvents           : false,
-  QuerySelector            : false
-};
 
 app.listen(port);
 
@@ -42,37 +39,70 @@ app.listen(port);
  *    /_/ |_|\____/\____/ /_/ /_____//____/  
  *                                           
  */
-
+ 
 app.get('/filterURL.html', function(req, res)
 {
-	console.log('asdf');
+	var url        =  unescape(req.query.url)
+	,   jqueryPath =  'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js';
+
+	console.log('Accessing...' + url);
 	
 	jsdom.env(
 	{
-		html: unescape(req.query.url),
-		scripts: [
-		    'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'
-		],
-		done: function(errors, window) 
+		html   :  url,
+		scripts:  [ jqueryPath ],
+		done   :  function(errors, window) 
 		{
-			console.log('asdf');
 			if(window)
 			{
-				var $ = window.$;
+				var $              =  window.$ //jQuery
+				  , href           =  window.location.href
+				  , filterURL      =  'filterURL.html?url='
+				  , anchorChanges  =  0 
+				  , imageChanges   =  0;
 
-				console.log($);
-
-				$('img').each(function()
+				//
+				//Modify each anchor to use the filterURL.html
+				//
+				$('a').each(function()
 				{
-					console.dir(this);
-					var src       =  this.src
-					,   hasDomain =  src.indexOf('http//') > -1;
-
-					if(!hasDomain)
+					if(this.hasAttribute('href'))
 					{
-						this.src  =  req.query.url + this.src;
+						anchorChanges++;
+
+						var url    =  this.href
+						  , noHost =  url.match(/http|https/) === null;
+
+						url        =  escape(noHost? href + url : url);
+						this.href  =  filterURL + url;
 					}
 				});
+
+				console.log('Converted ' + anchorChanges + ' Anchors!');	
+
+				//
+				//Modify each anchor to use the filterURL.html
+				//
+				$('img').each(function()
+				{
+					if(this.hasAttribute('src'))
+					{
+						imageChanges++;
+
+						var url    =  this.src
+						  , noHost =  url.match(/http|https/) === null;
+
+						if(url.indexOf('/') == 0)
+						{
+							url    =  url.substring(1);
+						}
+
+						url        =  noHost? href + url : url;
+						this.src   =  flipImage(url);
+					}
+				});
+
+				console.log('Converted ' + imageChanges + ' Images!');	
 
 				res.send(window.document.documentElement.innerHTML);
 			}
@@ -83,3 +113,32 @@ app.get('/filterURL.html', function(req, res)
 	  	}
 	});
 });
+
+function flipImage(url)
+{
+	console.log(url);
+	try
+	{
+		console.log('trying...');
+		http.get({host:'google.com', path: '/intl/en_ALL/images/srpr/logo1w.png'}, function(res) 
+		  {
+		  	try
+		  	{
+		  		var stream = fs.createWriteStream("clown.jpg");
+		    	res.pipe(stream);
+		  	}
+		  	catch(e1)
+		  	{
+		  		console.log('not trying hard enough2 :' + e1);
+		  	}
+		  } 
+		);
+	}
+	catch(e)
+	{
+		console.log('not trying hard enough:' + e);
+	}
+	
+
+	return url;
+}
