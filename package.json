@@ -1,11 +1,22 @@
 {
-	   "name": "WebpageFilterJS"
-	,  "version": "0.1.0"
-	,  "dependencies" : 
-		{
-			   "express": "*"
-			,  "zlib"   : "*"
-			,  "jsdom"  : "*"
-			,  "gm"     : "*"
-		}
+	"name": "WebpageFilterJS",
+	"version": "0.2.0",
+	"author": "Paden <padenportillo@gmail.com>",
+	"dependencies" : 
+	{
+		"express": "*",
+		"zlib"   : "*",
+		"jsdom"  : "*",
+		"gm"     : "*"
+	},
+	"repository": 
+	{
+	    "type": "git",
+	    "url": "https://github.com/Paden/WebpageFilterJS"
+	},
+	"license": "MIT",
+	"engine": 
+	{
+		"node": ">=0.6"
+	}
 }

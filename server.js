@@ -13,16 +13,12 @@
  *              /_/                                                    
  */
 
-var pub        =  __dirname + '/public'
-  , express    =  require('express')
-  , app        =  express.createServer()
-  , port       =  8080
-  , jsdom      =  require('jsdom')
-  , fs         =  require('fs')
-  , http       =  require('http')
-  , gm         =  require('gm')
-  , dlPath     =  __dirname + '/uploads'
-  , filterPath =  pub + '/filter' 
+var pub       =  __dirname + '/public',
+	express   =  require('express'),
+	url       =  require('url'),
+	app       =  express.createServer(),
+	WebFilter =  require('./WebFilter'),
+	port      =  8080;
 
 app.configure(function()
 {
@@ -40,105 +36,15 @@ app.listen(port);
  *                                           
  */
  
-app.get('/filterURL.html', function(req, res)
+app.get('/proxy.html', function(req, res)
 {
-	var url        =  unescape(req.query.url)
-	,   jqueryPath =  'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js';
-
-	console.log('Accessing...' + url);
-	
-	jsdom.env(
-	{
-		html   :  url,
-		scripts:  [ jqueryPath ],
-		done   :  function(errors, window) 
-		{
-			if(window)
-			{
-				var $              =  window.$ //jQuery
-				  , href           =  window.location.href
-				  , filterURL      =  'filterURL.html?url='
-				  , anchorChanges  =  0 
-				  , imageChanges   =  0;
-
-				//
-				//Modify each anchor to use the filterURL.html
-				//
-				$('a').each(function()
-				{
-					if(this.hasAttribute('href'))
-					{
-						anchorChanges++;
-
-						var url    =  this.href
-						  , noHost =  url.match(/http|https/) === null;
-
-						url        =  escape(noHost? href + url : url);
-						this.href  =  filterURL + url;
-					}
-				});
-
-				console.log('Converted ' + anchorChanges + ' Anchors!');	
-
-				//
-				//Modify each anchor to use the filterURL.html
-				//
-				$('img').each(function()
-				{
-					if(this.hasAttribute('src'))
-					{
-						imageChanges++;
-
-						var url    =  this.src
-						  , noHost =  url.match(/http|https/) === null;
-
-						if(url.indexOf('/') == 0)
-						{
-							url    =  url.substring(1);
-						}
-
-						url        =  noHost? href + url : url;
-						this.src   =  flipImage(url);
-					}
-				});
-
-				console.log('Converted ' + imageChanges + ' Images!');	
-
-				res.send(window.document.documentElement.innerHTML);
-			}
-			else
-			{
-				res.send(errors);
-			}
-	  	}
-	});
-});
-
-function flipImage(url)
-{
-	console.log(url);
 	try
 	{
-		console.log('trying...');
-		http.get({host:'google.com', path: '/intl/en_ALL/images/srpr/logo1w.png'}, function(res) 
-		  {
-		  	try
-		  	{
-		  		var stream = fs.createWriteStream("clown.jpg");
-		    	res.pipe(stream);
-		  	}
-		  	catch(e1)
-		  	{
-		  		console.log('not trying hard enough2 :' + e1);
-		  	}
-		  } 
-		);
+		var proxiedUrl  =  url.parse(unescape(req.query.url)); 	
+		new WebFilter(req, res, proxiedUrl.href);
 	}
 	catch(e)
 	{
-		console.log('not trying hard enough:' + e);
+		res.end('Put something [correct] in the bar above');
 	}
-	
-
-	return url;
-}
+});
