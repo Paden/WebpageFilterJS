@@ -14,10 +14,10 @@
  */
 
 var pub       =  __dirname + '/public',
-	express   =  require('express'),
 	url       =  require('url'),
+	express   =  require('express'),
+	WebFilter =  require('./lib/WebFilter'),
 	app       =  express.createServer(),
-	WebFilter =  require('./WebFilter'),
 	port      =  8080;
 
 app.configure(function()
@@ -38,13 +38,29 @@ app.listen(port);
  
 app.get('/proxy.html', function(req, res)
 {
-	try
+	if(typeof req.query.url === 'undefined')
 	{
-		var proxiedUrl  =  url.parse(unescape(req.query.url)); 	
-		new WebFilter(req, res, proxiedUrl.href);
+		res.end('Please specify a url'); return;
 	}
-	catch(e)
+
+	req.query.url   =  unescape(req.query.url);
+	var proxiedUrl  =  url.parse(req.query.url);
+
+	WebFilter(proxiedUrl, function(errors, window)
 	{
-		res.end('Put something [correct] in the bar above');
-	}
+		if(window)
+		{
+			var $  =  window.$;
+
+			$('link,a,img').absolutifyUrls(proxiedUrl);
+			$('a').proxify('/proxy.html', 'url');
+
+			res.send(window.document.innerHTML);
+		}
+		else
+		{
+			res.end(errors.toString());
+		}
+	});
+	
 });

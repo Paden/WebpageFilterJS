@@ -7,7 +7,6 @@
 		html, body
 		{
 			margin: 10px 10px;
-			background: #444;
 		}
 		#url 
 		{
@@ -15,17 +14,13 @@
 		    font-size: 1.3em;
 		    padding: 10px;
 		    margin: 0 0 10px 0;
-		    width: 500px;
-		    color:#C5C5C5;
+		    width: 1024px;
+		    color:#000;
 		}
 		#url:focus 
 		{
      		background: #fc9fff;   /* sexy hot pink */
-     		color: white;
-		}
-		#proxyFrame
-		{
-			background: #333;
+     		color: black;
 		}
 	</style>
 </head>
@@ -37,7 +32,7 @@
 		</form>
 	</div>
 	<div id="proxyUrl">
-		<iframe id="proxyFrame" width="1024" height="768px" src="proxy.html"></iframe>
+		<iframe id="proxyFrame" width="1024px" height="768px" src="proxy.html"></iframe>
 	</div>
 	<script type="text/javascript">
 		var proxyFrame  =  document.getElementById('proxyFrame'),
@@ -63,6 +58,11 @@
 			$url.blur(); 
 
 			return false;
+		});
+
+		$(proxyFrame).load(function() 
+		{
+			this.style.width = this.contentWindow.document.body.offsetWidth + 'px';
 		});
 	</script>
 </body>
