@@ -1,4 +1,20 @@
-WebpageFilterJS
-===============
+# Synopsis
+A web app that laods a web page in a iFrame. The user is then given options/filters
+to apply to the images on that web page.
 
-Gimme a webpage URL and I'll mess with it as much as humanly possible.
+# Usage
+
+## Install && Run
+> git clone https://github.com/Paden/WebpageFilterJS
+> npm install
+> node server.js
+
+## Running
+Once running, point your browser to port 8080 on your server and enter a URL and 
+check off the filters! That's it!
+
+## Quit
+Hit `ctrl+c`
+
+## Further documentation is in the comments of the module
+Enjoy!

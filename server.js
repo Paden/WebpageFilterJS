@@ -25,7 +25,14 @@ app.configure(function()
 	 app.use(express.static(pub));
 });
 
+function isDefined(obj)
+{
+	return typeof obj !== 'undefined';
+}
+
 app.listen(port);
+
+console.log('Listening on port: ' + port)
 
 /***
  *        ____  ____  __  ___________________
@@ -35,7 +42,7 @@ app.listen(port);
  *    /_/ |_|\____/\____/ /_/ /_____//____/  
  *                                           
  */
- 
+
 app.get('/proxy.html', function(req, res)
 {
 	var proxiedUrl =  req.query.url;
@@ -45,24 +52,46 @@ app.get('/proxy.html', function(req, res)
 		res.end('Please specify a url'); return;
 	}
 
-	proxiedUrl =  unescape(proxiedUrl);
-	proxiedUrl =  url.parse(proxiedUrl);
+	proxiedUrl  =  unescape(proxiedUrl);
+	proxiedUrl  =  url.parse(proxiedUrl);
 
+	//
+	// WebFilter(urlToGrab, callback)
+	//
 	WebFilter(proxiedUrl, function(errors, window)
 	{
 		if(window)
 		{
-			var $  =  window.$;//jQuery
+			var $       =  window.$, //jQuery
+			    options =  { //filters to apply
+		    	emboss    :  isDefined(req.query.emboss),
+		    	flip      :  isDefined(req.query.flip),
+		    	flop      :  isDefined(req.query.flop),
+		    	grayscale :  isDefined(req.query.grayscale),
+		    	implode   :  isDefined(req.query.implode),
+		    	monochrome:  isDefined(req.query.monochrome),
+		    	negative  :  isDefined(req.query.negative),
+		    	sepia     :  isDefined(req.query.sepia)
+		    };
 
+		    //Transform relative URLs to absolute URLs
+		    //Otherwise, relative URLs elements(<link>, <img>, and <a>) would not work.
 			$('link,a,img').absolutifyUrls(proxiedUrl);
+
+			//Transform enchor elements to filter through proxy
+			//so that filters may be appiled to them
 			$('a').proxify('/proxy.html', 'url');
-			$('img').GraphicsMagick(function()
+
+			//The MEAT AND POTATOES!
+			//Use this plugin to filter the images on a web page
+			$('img').GraphicsMagick(options, function()
 			{
 				res.send(window.document.innerHTML);
 			});
 		}
 		else
 		{
+			//Someting bad happen
 			res.end(errors.toString());
 		}
 	});

@@ -26,23 +26,85 @@
 			width: 1024px;
 			height: 768px;
 		}
+		#proxyForm label
+		{
+			font-size: 1.3em;
+			color: #ccc; 
+			margin: 0 20px 0 0;
+		}
 	</style>
 </head>
 <body>
 	<div id="urlBar">
 		<form id="proxyForm" action="proxy.html" method="GET">
-			<input id="url" name="url" placeholder="http://enter.url.com" value="" />
+			<input type="text" id="url" name="url" placeholder="http://enter.url.com" value="http://nodejs.org" />
+			<br />
+			<input type="checkbox" value="true" name="emboss" /><label>emboss</label>
+			<input type="checkbox" value="true" name="flip" /><label>flip</label>
+			<input type="checkbox" value="true" name="flop" /><label>flop</label>
+			<input type="checkbox" value="true" name="grayscale" /><label>grayscale</label>
+			<input type="checkbox" value="true" name="implode" /><label>implode</label>
+			<input type="checkbox" value="true" name="monochrome" /><label>monochrome</label>
+			<input type="checkbox" value="true" name="negative" /><label>negative</label>
+			<input type="checkbox" value="true" name="sepia" /><label>sepia</label>
 			<input type="submit" value="woo!" style="display:none" />
 		</form>
 	</div>
 	<div id="proxyUrl">
-		<iframe id="proxyFrame" src="proxy.html"></iframe>
+		<iframe name="proxyFrame" id="proxyFrame" src="proxy.html" onLoad="proxyload()"></iframe>
 	</div>
 	<script type="text/javascript">
 		var proxyFrame  =  document.getElementById('proxyFrame'),
 			$proxyForm  =  $('#proxyForm'),
+			$filters    =  $proxyForm.find('[type=checkbox]');
 		    $url        =  $('#url');
 
+		//
+		//Transform Query String to a JSON representation
+		//
+		//http://nodejs.org?a=2&b=3  --> {'a':'2','b':'3'}
+		//
+		function qsToObj(url)
+		{
+			var qs     =  url.substring(url.indexOf('?')+1),
+			    obj    =  {};
+			    qs     =  qs.split('&'),
+			    legnth =  0;
+
+			$.each(qs, function(i,elem)
+			{
+			    var keyval =  elem.split('=')
+			    length     =  i + 1;			      
+			    obj[keyval[0]] = keyval[1];
+			});
+
+			obj.length = length;
+
+			return obj;
+		}
+
+		//
+		//When iFrame loads make sure filters are applied
+		//and the $url input is up-to-date
+		//
+		function proxyload()
+		{
+			var qs   =  qsToObj(proxyFrame.contentWindow.location.href),
+			    url  =  unescape(qs.url);
+
+			$url.val(url);//update
+
+			var filters        =  qs.length - 1,
+			    correctFilters =  $filters.filter(':checked').length,
+			    filtersApplied =  filters == correctFilters
+
+			if(!filtersApplied)
+			{
+				$proxyForm.submit();
+			}
+		}
+
+		//if no entry, help the user out: start them off with "http://"
 		$url.keydown(function()
 		{
 			if(this.value === '')
@@ -51,18 +113,25 @@
 			}
 		});
 
+		//When filter is applied, resubmit form/iframe
+		$filters.change(function()
+		{
+			$proxyForm.submit();
+		});
+
+		//Submit url and filters to display in iFrame
 		$proxyForm.submit(function()
 		{
-			var params =  escape($proxyForm.serialize())
-			,   action =  this.action
-			,   src    =  action + '?' + params;
+			$url.val(unescape($url.val()));
+
+			var params =  $proxyForm.serialize(),
+			    action =  this.action,
+			    src    =  action + '?' + params;
 
 			proxyFrame.src =  src; 
 
-			$url.blur(); 
-
 			return false;
-		});
+		}).submit();
 	</script>
 </body>
 </html>
