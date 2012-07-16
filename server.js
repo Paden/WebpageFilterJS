@@ -14,8 +14,8 @@
  */
 
 var pub       =  __dirname + '/public',
-	url       =  require('url'),
 	express   =  require('express'),
+	url       =  require('url'),
 	WebFilter =  require('./lib/WebFilter'),
 	app       =  express.createServer(),
 	port      =  8080;
@@ -38,29 +38,32 @@ app.listen(port);
  
 app.get('/proxy.html', function(req, res)
 {
-	if(typeof req.query.url === 'undefined')
+	var proxiedUrl =  req.query.url;
+
+	if(typeof proxiedUrl === 'undefined')
 	{
 		res.end('Please specify a url'); return;
 	}
 
-	req.query.url   =  unescape(req.query.url);
-	var proxiedUrl  =  url.parse(req.query.url);
+	proxiedUrl =  unescape(proxiedUrl);
+	proxiedUrl =  url.parse(proxiedUrl);
 
 	WebFilter(proxiedUrl, function(errors, window)
 	{
 		if(window)
 		{
-			var $  =  window.$;
+			var $  =  window.$;//jQuery
 
 			$('link,a,img').absolutifyUrls(proxiedUrl);
 			$('a').proxify('/proxy.html', 'url');
-
-			res.send(window.document.innerHTML);
+			$('img').GraphicsMagick(function()
+			{
+				res.send(window.document.innerHTML);
+			});
 		}
 		else
 		{
 			res.end(errors.toString());
 		}
 	});
-	
 });

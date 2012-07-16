@@ -4,11 +4,12 @@
 	"author": "Paden <padenportillo@gmail.com>",
 	"dependencies" : 
 	{
-		"express": "*",
-		"zlib"   : "*",
-		"jsdom"  : "*",
-		"gm"     : "*",
-		"request": "*"
+		"express"   : "*",
+		"zlib"      : "*",
+		"jsdom"     : "*",
+		"gm"        : "*",
+		"request"   : "*",
+		"file-utils": "*"
 	},
 	"repository": 
 	{
