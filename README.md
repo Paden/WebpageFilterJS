@@ -4,9 +4,10 @@ to apply to the images on that web page.
 
 # Usage
 
-## Install && Run
-> git clone https://github.com/Paden/WebpageFilterJS
-> npm install
+## Install
+> git clone https://github.com/Paden/WebpageFilterJS && npm install
+
+##Run
 > node server.js
 
 ## Running
