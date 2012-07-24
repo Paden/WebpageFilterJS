@@ -22,13 +22,8 @@ var pub       =  __dirname + '/public',
 
 app.configure(function()
 {
-	 app.use(express.static(pub));
+	 app.use(express.static(pub)); //Static Serving
 });
-
-function isDefined(obj)
-{
-	return typeof obj !== 'undefined';
-}
 
 app.listen(port);
 
@@ -62,17 +57,8 @@ app.get('/proxy.html', function(req, res)
 	{
 		if(window)
 		{
-			var $       =  window.$, //jQuery
-			    options =  { //filters to apply
-		    	emboss    :  isDefined(req.query.emboss),
-		    	flip      :  isDefined(req.query.flip),
-		    	flop      :  isDefined(req.query.flop),
-		    	grayscale :  isDefined(req.query.grayscale),
-		    	implode   :  isDefined(req.query.implode),
-		    	monochrome:  isDefined(req.query.monochrome),
-		    	negative  :  isDefined(req.query.negative),
-		    	sepia     :  isDefined(req.query.sepia)
-		    };
+			var $          =  window.$, //jQuery
+			    imgOptions =  req.query;
 
 		    //Transform relative URLs to absolute URLs
 		    //Otherwise, relative URLs elements(<link>, <img>, and <a>) would not work.
@@ -84,14 +70,14 @@ app.get('/proxy.html', function(req, res)
 
 			//The MEAT AND POTATOES!
 			//Use this plugin to filter the images on a web page
-			$('img').GraphicsMagick(options, function()
+			$('img').GraphicsMagick(imgOptions, function()
 			{
 				res.send(window.document.innerHTML);
 			});
 		}
 		else
 		{
-			//Someting bad happen
+			//Someting bad happened
 			res.end(errors.toString());
 		}
 	});
